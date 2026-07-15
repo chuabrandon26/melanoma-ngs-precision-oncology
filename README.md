@@ -26,10 +26,15 @@ reading actual pipeline output, not simulated or hand-written for illustration.
 
 `hap.py`/`vcfeval` against the published COLO829 SNV/indel truth set, PASS calls only:
 
-| Type | Recall | Precision | F1 | Truth-set size (in scope) |
-|---|---|---|---|---|
-| SNV | 2.6% | 3.0% | 2.8% | 76 |
-| Indel | 16.7% | 25.0% | 20.0% | 6 |
+| Type | Recall | Precision | F1 | TP / FP / FN | Truth-set size |
+|---|---|---|---|---|---|
+| SNV | 2.6% | 3.0% | 2.8% | 2 / 65 / 74 | 76 |
+| Indel | 16.7% | 25.0% | 20.0% | 1 / 3 / 5 | 6 |
+
+Raw counts included alongside the percentages deliberately: `hap.py`'s own summary CSV
+(`results/wes/benchmark/COLO829T_vs_COLO829R.happy.summary.csv`) reports exactly these
+TP/FP/FN numbers, so every percentage above is directly checkable against them rather
+than needing to be taken on faith.
 
 ![WES precision, recall, and F1 by variant type](results/figures/wes-precision-recall-f1-by-type.png)
 
@@ -44,13 +49,23 @@ the real numbers interpreted in context rather than left to speak for themselves
 
 ### Module 2: WGS-style SNV/indel, structural variant, and copy-number calling
 
-| Analysis | Metric | Result |
-|---|---|---|
-| SNV, whole chr9+chr20 (`hap.py`) | Recall / Precision / F1 | 5.7% / 4.3% / 4.9% |
-| Indel, whole chr9+chr20 (`hap.py`) | Recall / Precision / F1 | 3.6% / 3.8% / 3.7% |
-| Structural variants (Manta + Truvari) | Recall / Precision / F1 | 44.4% / **100%** / 61.5% |
-| CNV vs. independent BICseq2 segmentation (concordance, not accuracy) | Segment overlap | 39/39 (100%) |
-| CNV vs. SV-truth DEL/DUP calls (concordance, not accuracy) | Segment overlap | 5/39 (12.8%) |
+| Analysis | Recall | Precision | F1 | Raw counts (checkable against the source file) |
+|---|---|---|---|---|
+| SNV, whole chr9+chr20 (`hap.py`) | 5.7% | 4.3% | 4.9% | 120 TP / 2,691 FP / 1,981 FN, of 2,101 truth-set SNVs |
+| Indel, whole chr9+chr20 (`hap.py`) | 3.6% | 3.8% | 3.7% | 5 TP / 128 FP / 133 FN, of 138 truth-set indels |
+| Structural variants (Manta + Truvari) | 44.4% | **100%** | 61.5% | 6 calls made, 0 unmatched (0 FP)¹; 8 of 18 truth-set events recovered (10 FN) |
+| CNV vs. independent BICseq2 segmentation (concordance, not accuracy) | — | — | — | 39/39 CNVkit segments overlap a BICseq2 segment (100%) |
+| CNV vs. SV-truth DEL/DUP calls (concordance, not accuracy) | — | — | — | 5/39 CNVkit segments overlap an SV-truth DEL/DUP region (12.8%) |
+
+Every number above is read directly from the pipeline's own output files (`hap.py`'s
+`summary.csv` for SNV/indel, Truvari's `summary.json` for SVs, the two `.overlap.tsv`
+files for CNV), not derived or estimated. ¹ Truvari counts true positives from each side
+separately rather than as one shared TP number: `TP-comp` (6, all 6 of Manta's calls
+matched a truth event, giving 0 FP and 100% precision) and `TP-base` (8, out of 18
+truth-set events, giving 10 FN and 44.4% recall) are genuinely different counts, since SV
+matching is not always strictly one-to-one the way `hap.py`'s SNV/indel accounting is;
+`results/wgs/benchmark/COLO829T_vs_COLO829R_truvari/summary.json` has the full,
+unedited numbers.
 
 ![WGS CNVkit copy-number profile, chr9 and chr20](results/figures/wgs-copy-number-profile-chr9-chr20.png)
 
