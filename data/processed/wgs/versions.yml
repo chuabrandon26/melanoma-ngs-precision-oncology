@@ -1,0 +1,2 @@
+"FILTER_MUTECT_CALLS":
+    gatk4: Using GATK jar /mnt/c/Users/chuab/Desktop/somati_wgs_wes_nf/work/conda/env-6684ea23d69ceb1742019ff36904f612/share/gatk4-4.5.0.0-0/gatk-package-4.5.0.0-local.jar

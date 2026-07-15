@@ -1,0 +1,63 @@
+2026-07-10 20:31:19,358 [INFO] Truvari v5.4.0
+2026-07-10 20:31:19,359 [INFO] Command /mnt/c/Users/chuab/Desktop/somati_wgs_wes_nf/work/conda/env-6c1a62ee5bc85998c5f978ad481c2e6f/bin/truvari bench -b truth_sv.vcf.gz -c COLO829T_vs_COLO829R.manta.somaticSV.vcf.gz -f genome.fa --includebed genome.access.bed -o COLO829T_vs_COLO829R_truvari --pick multi --refdist 500 --pctseq 0.7 --pctsize 0.7
+2026-07-10 20:31:19,360 [INFO] Params:
+{
+    "base": "/mnt/c/Users/chuab/Desktop/somati_wgs_wes_nf/work/5a/aee44c1a18eec404a068844e18ce07/truth_sv.vcf.gz",
+    "comp": "/mnt/c/Users/chuab/Desktop/somati_wgs_wes_nf/work/5a/aee44c1a18eec404a068844e18ce07/COLO829T_vs_COLO829R.manta.somaticSV.vcf.gz",
+    "output": "COLO829T_vs_COLO829R_truvari",
+    "includebed": "/mnt/c/Users/chuab/Desktop/somati_wgs_wes_nf/work/5a/aee44c1a18eec404a068844e18ce07/genome.access.bed",
+    "extend": 0,
+    "debug": false,
+    "reference": "/mnt/c/Users/chuab/Desktop/somati_wgs_wes_nf/work/5a/aee44c1a18eec404a068844e18ce07/genome.fa",
+    "refdist": 500,
+    "pctseq": 0.7,
+    "pctsize": 0.7,
+    "pctovl": 0.0,
+    "typeignore": false,
+    "no_roll": false,
+    "chunksize": 1000,
+    "bSample": "COLO829T",
+    "cSample": "COLO829R",
+    "dup_to_ins": false,
+    "bnddist": 100,
+    "sizemin": 50,
+    "sizefilt": 30,
+    "sizemax": 50000,
+    "passonly": false,
+    "no_ref": false,
+    "pick": "multi",
+    "ignore_monref": true,
+    "check_multi": true,
+    "check_monref": true,
+    "no_single_bnd": true,
+    "write_resolved": false,
+    "decompose": true,
+    "short_circuit": false,
+    "skip_gt": false,
+    "max_resolve": 25000
+}
+2026-07-10 20:31:19,447 [INFO] Including 2 bed regions
+2026-07-10 20:31:19,540 [INFO] Zipped 27 variants Counter({'base': 18, 'comp': 9})
+2026-07-10 20:31:19,541 [INFO] 10 chunks of 27 variants Counter({'base': 18, 'comp': 6, '__filtered': 3})
+2026-07-10 20:31:19,763 [INFO] Stats: {
+    "TP-base": 8,
+    "TP-comp": 6,
+    "FP": 0,
+    "FN": 10,
+    "precision": 1.0,
+    "recall": 0.4444444444444444,
+    "f1": 0.6153846153846153,
+    "base cnt": 18,
+    "comp cnt": 6,
+    "TP-comp_TP-gt": 0,
+    "TP-comp_FP-gt": 6,
+    "TP-base_TP-gt": 0,
+    "TP-base_FP-gt": 8,
+    "gt_concordance": 0.0,
+    "gt_matrix": {
+        "(0, 1)": {
+            "None": 8
+        }
+    }
+}
+2026-07-10 20:31:19,764 [INFO] Finished bench

@@ -1,0 +1,2 @@
+task_id	hash	native_id	process	tag	status	exit	start	duration	realtime	%cpu	peak_rss	peak_vmem
+1	83/bcc48a	522658	FETCH_TCGA_SKCM_COUNTS	-	COMPLETED	0	2026-07-12 01:27:43.771	11m 30s	11m 26s	0.9%	29.7 MB	37.7 MB

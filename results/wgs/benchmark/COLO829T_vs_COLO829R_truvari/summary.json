@@ -1,0 +1,21 @@
+{
+    "TP-base": 8,
+    "TP-comp": 6,
+    "FP": 0,
+    "FN": 10,
+    "precision": 1.0,
+    "recall": 0.4444444444444444,
+    "f1": 0.6153846153846153,
+    "base cnt": 18,
+    "comp cnt": 6,
+    "TP-comp_TP-gt": 0,
+    "TP-comp_FP-gt": 6,
+    "TP-base_TP-gt": 0,
+    "TP-base_FP-gt": 8,
+    "gt_concordance": 0.0,
+    "gt_matrix": {
+        "(0, 1)": {
+            "None": 8
+        }
+    }
+}
