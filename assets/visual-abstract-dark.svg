@@ -1,0 +1,274 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 752" width="1000" height="752" role="img" aria-labelledby="t d">
+<title id="t">Visual abstract: Benchmarking somatic variant calling in melanoma</title>
+<desc id="d">Three Nextflow DSL2 pipelines call somatic SNVs, indels, structural variants and copy number on the COLO829 melanoma tumor and matched normal, benchmarked against published truth sets, plus RNA-seq of 120 TCGA-SKCM patients. Manta reached 100 percent SV precision, a CDKN2A-spanning loss on 9p was recovered, 3,527 genes differed between metastatic and primary tumors, and TMB correlated with an IFN-gamma signature (rho 0.21).</desc>
+<style>
+  text { font-family: 'Helvetica Neue', Helvetica, Arial, 'Liberation Sans', sans-serif; fill: #e6edf3; }
+  .bgcard { fill: #151b23; stroke: #2d3640; }
+  .panel { fill: #0d1117; stroke: #2d3640; stroke-width: 1; }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 1.6px; fill: #9aa7b4; }
+  .title { font-size: 26px; font-weight: 700; letter-spacing: -0.3px; }
+  .sub { font-size: 14px; fill: #9aa7b4; }
+  .h2 { font-size: 16px; font-weight: 700; }
+  .body { font-size: 12.5px; }
+  .small { font-size: 11px; fill: #9aa7b4; }
+  .lab { font-size: 12px; font-weight: 700; }
+  .num { font-size: 23px; font-weight: 700; }
+  .q { font-size: 12.5px; font-weight: 700; }
+  .take { font-size: 15px; }
+  .em { font-weight: 700; }
+  .step-role { font-size: 13px; font-weight: 700; }
+  .step-tool { font-size: 11px; }
+  .step-n { font-size: 10px; font-weight: 700; fill: #9aa7b4; }
+  .chiptext { font-size: 11.5px; font-weight: 600; }
+  .skill { fill: #0d1117; stroke: #2d3640; stroke-width: 1.2; }
+  .rule { stroke: #2d3640; stroke-width: 1; fill: none; }
+  .qbox { fill: #1c2033; }
+  .qmark { fill: #9085e9; }
+  .qmark-t { font-size: 13px; font-weight: 700; fill: #0d1117; }
+  .chev { fill: none; stroke: #9aa7b4; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .chip { fill: #0d1117; stroke: #2d3640; stroke-width: 1.2; animation: glow 8.4s linear infinite; }
+  .track { stroke: #2d3640; stroke-width: 2; stroke-linecap: round; }
+  .packet { fill: #34b98b; animation: travel 8.4s linear infinite; }
+  .tile { stroke-width: 1.5; }
+  .tile.up { fill: #e66767; fill-opacity: .14; stroke: #e66767; }
+  .tile.down { fill: #3987e5; fill-opacity: .14; stroke: #3987e5; }
+  .tile.metric { fill: #34b98b; fill-opacity: .12; stroke: #34b98b; }
+  .tile.note { fill: #9085e9; fill-opacity: .10; stroke: #9085e9; }
+  .tval { font-size: 15px; font-weight: 700; }
+  .tsub { font-size: 10px; fill: #9aa7b4; }
+  .tri-up { fill: #e66767; transform-box: fill-box; transform-origin: center; animation: bobUp 2.6s ease-in-out infinite; }
+  .tri-down { fill: #3987e5; transform-box: fill-box; transform-origin: center; animation: bobDown 2.6s ease-in-out infinite; }
+  .check { fill: none; stroke: #34b98b; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+  .statbox { fill: #1f2731; }
+  /* motif classes */
+  .m-lab { font-size: 11px; fill: #9aa7b4; }
+  .m-lab.bold { font-weight: 700; fill: #e6edf3; }
+  .m-lab.small { font-size: 9.5px; }
+  .m-lab.inv { fill: #0d1117; font-weight: 700; }
+  .m-strand { fill: none; stroke-width: 2.6; stroke-linecap: round; }
+  .m-strand.a { stroke: #9085e9; }
+  .m-strand.b { stroke: #34b98b; }
+  .m-rung { stroke: #2d3640; stroke-width: 2; }
+  .m-rung.hit { stroke: #d55181; stroke-width: 3; }
+  .m-hitdot, .m-ring, .m-dot.hom, .m-cell.hom { transform-box: fill-box; transform-origin: center; }
+  .m-hitdot { fill: #d55181; animation: pulse 3s ease-in-out infinite; }
+  .m-dot { fill-opacity: .85; }
+  .cx { fill: #9085e9; } .acc { fill: #34b98b; } .cb { fill: #c98500; } .hom { fill: #d55181; }
+  .ink { fill: #e6edf3; }
+  .m-peak { fill-opacity: .7; stroke: none; }
+  .m-base { stroke: #2d3640; stroke-width: 1.2; }
+  .m-gene { stroke: #9aa7b4; stroke-width: 1.4; }
+  .m-exon { fill: #9aa7b4; }
+  .m-tissue { fill: #1f2731; stroke: #9aa7b4; stroke-width: 1.2; }
+  .m-ring { fill: none; stroke: #e6edf3; stroke-width: 2; stroke-dasharray: 3 2; animation: pulse 3.2s ease-in-out infinite; }
+  .m-cell { stroke: #0d1117; stroke-width: 1.2; }
+  .m-radius { fill: #34b98b; fill-opacity: .08; stroke: #34b98b; stroke-width: 1.6; stroke-dasharray: 4 3; }
+  .m-center { fill: #e6edf3; }
+  .m-cellf { stroke: none; }
+  .m-op { font-size: 18px; font-weight: 700; fill: #9aa7b4; }
+  .m-edge { stroke: #2d3640; stroke-width: .8; }
+  .m-edge.strong { stroke: #9aa7b4; stroke-width: 1.4; }
+  .m-node { fill: #0d1117; stroke: #9085e9; stroke-width: 2; }
+  .m-node.in { stroke: #9aa7b4; }
+  .m-node.z { fill: #34b98b; stroke: #34b98b; }
+  .m-base-t { font-family: 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono', monospace; font-size: 15px; font-weight: 700; }
+  .m-base-t.acc { fill: #34b98b; } .m-base-t.cx { fill: #9085e9; } .m-base-t.cb { fill: #c98500; } .m-base-t.hom { fill: #d55181; }
+  .m-window { fill: #34b98b; fill-opacity: .10; stroke: #34b98b; stroke-width: 2; animation: scan 4s ease-in-out infinite; }
+  .m-bar { fill: #9085e9; fill-opacity: .75; }
+  .m-arrow { stroke: #9aa7b4; stroke-width: 1.4; fill: none; }
+  .m-table { fill: #0d1117; stroke: #9aa7b4; stroke-width: 1.2; }
+  .m-thead { fill: #9085e9; }
+  .m-row { stroke: #2d3640; stroke-width: 1.4; }
+  .m-cyl { fill: #1f2731; stroke: #34b98b; stroke-width: 1.6; }
+  .m-cyl.top { fill: #0d1117; }
+  .m-bond { stroke: #9aa7b4; stroke-width: 3; stroke-linecap: round; }
+  .m-atom { fill: #9aa7b4; stroke: #0d1117; stroke-width: 1.4; }
+  .m-atom.pep { animation: drift 4s ease-in-out infinite; }
+  .m-head { fill: #c98500; }
+  .m-tail { fill: none; stroke: #2d3640; stroke-width: 1.4; }
+  .m-stick { stroke: #9aa7b4; stroke-width: 2; }
+  .m-stick.ghost { stroke: #2d3640; stroke-dasharray: 3 2; }
+  .m-stick.hit { stroke: #d55181; stroke-width: 3; }
+  .m-ecg { fill: none; stroke: #d55181; stroke-width: 2.2; stroke-linejoin: round; stroke-dasharray: 900; animation: ecg 3.4s linear infinite; }
+  .m-gauge { fill: none; stroke-width: 9; }
+  .m-gauge.acc { stroke: #34b98b; } .m-gauge.cb { stroke: #c98500; } .m-gauge.hom { stroke: #d55181; }
+  .m-needle { stroke: #e6edf3; stroke-width: 2.6; stroke-linecap: round; }
+  @keyframes pulse { 0%, 100% { opacity: .5; transform: scale(.85); } 50% { opacity: 1; transform: scale(1.15); } }
+  @keyframes bobUp { 0%, 100% { transform: translateY(1.5px); } 50% { transform: translateY(-1.5px); } }
+  @keyframes bobDown { 0%, 100% { transform: translateY(-1.5px); } 50% { transform: translateY(1.5px); } }
+  @keyframes travel { 0% { transform: translateX(0); opacity: 0; } 3% { opacity: 1; } 97% { opacity: 1; } 100% { transform: translateX(776.6px); opacity: 0; } }
+  @keyframes glow { 0%, 14.3%, 100% { stroke: #2d3640; stroke-width: 1.2; } 3%, 8.9% { stroke: #34b98b; stroke-width: 2.2; } }
+  @keyframes scan { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(6px); } }
+  @keyframes drift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+  @keyframes ecg { 0% { stroke-dashoffset: 900; } 100% { stroke-dashoffset: 0; } }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
+<rect x="0.5" y="0.5" width="999" height="751" rx="18" class="bgcard"/>
+<text x="36.0" y="44.0" class="eyebrow">VISUAL ABSTRACT  ·  CANCER GENOMICS  ·  NEXTFLOW DSL2  ·  COLO829 MELANOMA</text>
+<text x="36.0" y="79.0" class="title">Benchmarking somatic variant calling in melanoma</text>
+<text x="36.0" y="106.0" class="sub">Three Nextflow pipelines (WES, WGS-style, RNA-seq), each scored against published ground truth</text>
+<rect x="36" y="128" width="296" height="368" rx="12" class="panel"/><text x="52.0" y="154.0" class="eyebrow">QUESTION</text><text x="52.0" y="176.0" class="h2">Can callers find known mutations?</text>
+<text x="52.0" y="228.0" class="m-lab">tumor</text>
+<line x1="110.0" y1="224.0" x2="110.0" y2="224.0" class="m-rung"/>
+<line x1="123.5" y1="233.7" x2="123.5" y2="214.3" class="m-rung"/>
+<line x1="136.9" y1="236.9" x2="136.9" y2="211.1" class="m-rung"/>
+<line x1="150.4" y1="231.6" x2="150.4" y2="216.4" class="m-rung"/>
+<line x1="163.9" y1="221.3" x2="163.9" y2="226.7" class="m-rung hit"/>
+<line x1="177.3" y1="212.7" x2="177.3" y2="235.3" class="m-rung"/>
+<line x1="190.8" y1="211.6" x2="190.8" y2="236.4" class="m-rung"/>
+<line x1="204.3" y1="218.7" x2="204.3" y2="229.3" class="m-rung"/>
+<line x1="217.7" y1="229.3" x2="217.7" y2="218.7" class="m-rung"/>
+<line x1="231.2" y1="236.4" x2="231.2" y2="211.6" class="m-rung hit"/>
+<line x1="244.7" y1="235.3" x2="244.7" y2="212.7" class="m-rung"/>
+<line x1="258.1" y1="226.7" x2="258.1" y2="221.3" class="m-rung"/>
+<line x1="271.6" y1="216.4" x2="271.6" y2="231.6" class="m-rung hit"/>
+<line x1="285.1" y1="211.1" x2="285.1" y2="236.9" class="m-rung"/>
+<line x1="298.5" y1="214.3" x2="298.5" y2="233.7" class="m-rung"/>
+<line x1="312.0" y1="224.0" x2="312.0" y2="224.0" class="m-rung"/>
+<path class="m-strand a" d="M110.0,224.0 L113.4,226.7 L116.7,229.3 L120.1,231.6 L123.5,233.7 L126.8,235.3 L130.2,236.4 L133.6,236.9 L136.9,236.9 L140.3,236.4 L143.7,235.3 L147.0,233.7 L150.4,231.6 L153.8,229.3 L157.1,226.7 L160.5,224.0 L163.9,221.3 L167.2,218.7 L170.6,216.4 L174.0,214.3 L177.3,212.7 L180.7,211.6 L184.1,211.1 L187.4,211.1 L190.8,211.6 L194.2,212.7 L197.5,214.3 L200.9,216.4 L204.3,218.7 L207.6,221.3 L211.0,224.0 L214.4,226.7 L217.7,229.3 L221.1,231.6 L224.5,233.7 L227.8,235.3 L231.2,236.4 L234.6,236.9 L237.9,236.9 L241.3,236.4 L244.7,235.3 L248.0,233.7 L251.4,231.6 L254.8,229.3 L258.1,226.7 L261.5,224.0 L264.9,221.3 L268.2,218.7 L271.6,216.4 L275.0,214.3 L278.3,212.7 L281.7,211.6 L285.1,211.1 L288.4,211.1 L291.8,211.6 L295.2,212.7 L298.5,214.3 L301.9,216.4 L305.3,218.7 L308.6,221.3 L312.0,224.0"/>
+<path class="m-strand b" d="M110.0,224.0 L113.4,221.3 L116.7,218.7 L120.1,216.4 L123.5,214.3 L126.8,212.7 L130.2,211.6 L133.6,211.1 L136.9,211.1 L140.3,211.6 L143.7,212.7 L147.0,214.3 L150.4,216.4 L153.8,218.7 L157.1,221.3 L160.5,224.0 L163.9,226.7 L167.2,229.3 L170.6,231.6 L174.0,233.7 L177.3,235.3 L180.7,236.4 L184.1,236.9 L187.4,236.9 L190.8,236.4 L194.2,235.3 L197.5,233.7 L200.9,231.6 L204.3,229.3 L207.6,226.7 L211.0,224.0 L214.4,221.3 L217.7,218.7 L221.1,216.4 L224.5,214.3 L227.8,212.7 L231.2,211.6 L234.6,211.1 L237.9,211.1 L241.3,211.6 L244.7,212.7 L248.0,214.3 L251.4,216.4 L254.8,218.7 L258.1,221.3 L261.5,224.0 L264.9,226.7 L268.2,229.3 L271.6,231.6 L275.0,233.7 L278.3,235.3 L281.7,236.4 L285.1,236.9 L288.4,236.9 L291.8,236.4 L295.2,235.3 L298.5,233.7 L301.9,231.6 L305.3,229.3 L308.6,226.7 L312.0,224.0"/>
+<circle cx="163.9" cy="202" r="3.6" class="m-hitdot" style="animation-delay:0.0s"/>
+<circle cx="231.2" cy="202" r="3.6" class="m-hitdot" style="animation-delay:0.5s"/>
+<circle cx="271.6" cy="202" r="3.6" class="m-hitdot" style="animation-delay:1.0s"/>
+<text x="52.0" y="292.0" class="m-lab">normal</text>
+<line x1="110.0" y1="288.0" x2="110.0" y2="288.0" class="m-rung"/>
+<line x1="123.5" y1="297.7" x2="123.5" y2="278.3" class="m-rung"/>
+<line x1="136.9" y1="300.9" x2="136.9" y2="275.1" class="m-rung"/>
+<line x1="150.4" y1="295.6" x2="150.4" y2="280.4" class="m-rung"/>
+<line x1="163.9" y1="285.3" x2="163.9" y2="290.7" class="m-rung"/>
+<line x1="177.3" y1="276.7" x2="177.3" y2="299.3" class="m-rung"/>
+<line x1="190.8" y1="275.6" x2="190.8" y2="300.4" class="m-rung"/>
+<line x1="204.3" y1="282.7" x2="204.3" y2="293.3" class="m-rung"/>
+<line x1="217.7" y1="293.3" x2="217.7" y2="282.7" class="m-rung"/>
+<line x1="231.2" y1="300.4" x2="231.2" y2="275.6" class="m-rung"/>
+<line x1="244.7" y1="299.3" x2="244.7" y2="276.7" class="m-rung"/>
+<line x1="258.1" y1="290.7" x2="258.1" y2="285.3" class="m-rung"/>
+<line x1="271.6" y1="280.4" x2="271.6" y2="295.6" class="m-rung"/>
+<line x1="285.1" y1="275.1" x2="285.1" y2="300.9" class="m-rung"/>
+<line x1="298.5" y1="278.3" x2="298.5" y2="297.7" class="m-rung"/>
+<line x1="312.0" y1="288.0" x2="312.0" y2="288.0" class="m-rung"/>
+<path class="m-strand a" d="M110.0,288.0 L113.4,290.7 L116.7,293.3 L120.1,295.6 L123.5,297.7 L126.8,299.3 L130.2,300.4 L133.6,300.9 L136.9,300.9 L140.3,300.4 L143.7,299.3 L147.0,297.7 L150.4,295.6 L153.8,293.3 L157.1,290.7 L160.5,288.0 L163.9,285.3 L167.2,282.7 L170.6,280.4 L174.0,278.3 L177.3,276.7 L180.7,275.6 L184.1,275.1 L187.4,275.1 L190.8,275.6 L194.2,276.7 L197.5,278.3 L200.9,280.4 L204.3,282.7 L207.6,285.3 L211.0,288.0 L214.4,290.7 L217.7,293.3 L221.1,295.6 L224.5,297.7 L227.8,299.3 L231.2,300.4 L234.6,300.9 L237.9,300.9 L241.3,300.4 L244.7,299.3 L248.0,297.7 L251.4,295.6 L254.8,293.3 L258.1,290.7 L261.5,288.0 L264.9,285.3 L268.2,282.7 L271.6,280.4 L275.0,278.3 L278.3,276.7 L281.7,275.6 L285.1,275.1 L288.4,275.1 L291.8,275.6 L295.2,276.7 L298.5,278.3 L301.9,280.4 L305.3,282.7 L308.6,285.3 L312.0,288.0"/>
+<path class="m-strand b" d="M110.0,288.0 L113.4,285.3 L116.7,282.7 L120.1,280.4 L123.5,278.3 L126.8,276.7 L130.2,275.6 L133.6,275.1 L136.9,275.1 L140.3,275.6 L143.7,276.7 L147.0,278.3 L150.4,280.4 L153.8,282.7 L157.1,285.3 L160.5,288.0 L163.9,290.7 L167.2,293.3 L170.6,295.6 L174.0,297.7 L177.3,299.3 L180.7,300.4 L184.1,300.9 L187.4,300.9 L190.8,300.4 L194.2,299.3 L197.5,297.7 L200.9,295.6 L204.3,293.3 L207.6,290.7 L211.0,288.0 L214.4,285.3 L217.7,282.7 L221.1,280.4 L224.5,278.3 L227.8,276.7 L231.2,275.6 L234.6,275.1 L237.9,275.1 L241.3,275.6 L244.7,276.7 L248.0,278.3 L251.4,280.4 L254.8,282.7 L258.1,285.3 L261.5,288.0 L264.9,290.7 L268.2,293.3 L271.6,295.6 L275.0,297.7 L278.3,299.3 L281.7,300.4 L285.1,300.9 L288.4,300.9 L291.8,300.4 L295.2,299.3 L298.5,297.7 L301.9,295.6 L305.3,293.3 L308.6,290.7 L312.0,288.0"/>
+<text x="184.0" y="342.0" class="small" text-anchor="middle">COLO829 tumor vs matched normal COLO829BL</text>
+<text x="52.0" y="368.0" class="body">COLO829 comes with a published truth set</text>
+<text x="52.0" y="384.5" class="body">of somatic SNVs, indels and structural</text>
+<text x="52.0" y="401.0" class="body">variants. As a result, every caller here</text>
+<text x="52.0" y="417.5" class="body">is scored for precision and recall</text>
+<text x="52.0" y="434.0" class="body">instead of simply producing output.</text>
+<rect x="48" y="446" width="272" height="38" rx="8" class="qbox"/>
+<circle cx="68" cy="465" r="10" class="qmark"/>
+<text x="68.0" y="470.0" class="qmark-t" text-anchor="middle">?</text>
+<text x="86.0" y="461.0" class="q">How accurately do standard callers</text>
+<text x="86.0" y="477.0" class="q">recover known somatic variants?</text>
+<rect x="352" y="128" width="296" height="368" rx="12" class="panel"/><text x="368.0" y="154.0" class="eyebrow">DATA AND DESIGN</text><text x="368.0" y="176.0" class="h2">Laptop-scale, real data</text>
+<rect x="368" y="192" width="128" height="66" rx="8" class="statbox"/>
+<text x="380.0" y="222.0" class="num">3</text>
+<text x="380.0" y="239.0" class="small">Nextflow pipelines</text>
+<rect x="504" y="192" width="128" height="66" rx="8" class="statbox"/>
+<text x="516.0" y="222.0" class="num">chr9+20</text>
+<text x="516.0" y="239.0" class="small">sliced over HTTPS</text>
+<rect x="368" y="266" width="128" height="66" rx="8" class="statbox"/>
+<text x="380.0" y="296.0" class="num">120</text>
+<text x="380.0" y="313.0" class="small">TCGA-SKCM patients</text>
+<rect x="504" y="266" width="128" height="66" rx="8" class="statbox"/>
+<text x="516.0" y="296.0" class="num">30×/20×</text>
+<text x="516.0" y="313.0" class="small">tumor / normal depth</text>
+<text x="368.0" y="362.0" class="body">Only chr9 and chr20 are streamed from</text>
+<text x="368.0" y="378.5" class="body">the remote ENA BAMs, which keeps the</text>
+<text x="368.0" y="395.0" class="body">run on a laptop. In addition, chr9</text>
+<text x="368.0" y="411.5" class="body">carries CDKN2A, a key melanoma gene.</text>
+<line x1="368" y1="446" x2="632" y2="446" class="rule"/>
+<text x="368.0" y="466.0" class="small">Truth sets: Valle-Inclan et al. 2022, SMaHT</text>
+<text x="368.0" y="481.0" class="small">Cohort: TCGA-SKCM open counts (GDC API)</text>
+<rect x="668" y="128" width="296" height="368" rx="12" class="panel"/><text x="684.0" y="154.0" class="eyebrow">FINDINGS</text><text x="684.0" y="176.0" class="h2">What the benchmarks show</text>
+<text x="684.0" y="212.0" class="lab">Structural variants</text>
+<text x="684.0" y="227.0" class="lab">(Manta + Truvari)</text>
+<rect x="848" y="192" width="100" height="46" rx="8" class="tile metric"/>
+<text x="898.0" y="216.0" class="tval" text-anchor="middle">100%</text>
+<text x="898.0" y="230.0" class="tsub" text-anchor="middle">precision</text>
+<text x="684.0" y="264.0" class="lab">CDKN2A loss on 9p</text>
+<text x="684.0" y="279.0" class="lab">(CNVkit)</text>
+<rect x="848" y="244" width="100" height="46" rx="8" class="tile metric"/>
+<path class="check" d="M860,267.0 l5,5 l9,-11"/>
+<text x="882.0" y="272.0" class="lab">found</text>
+<text x="684.0" y="316.0" class="lab">DE genes, metastatic</text>
+<text x="684.0" y="331.0" class="lab">vs primary (DESeq2)</text>
+<rect x="848" y="296" width="100" height="46" rx="8" class="tile metric"/>
+<text x="898.0" y="320.0" class="tval" text-anchor="middle">3,527</text>
+<text x="898.0" y="334.0" class="tsub" text-anchor="middle">padj &lt; 0.05</text>
+<text x="684.0" y="368.0" class="lab">TMB vs IFN-γ</text>
+<text x="684.0" y="383.0" class="lab">signature</text>
+<rect x="848" y="348" width="100" height="46" rx="8" class="tile metric"/>
+<text x="898.0" y="372.0" class="tval" text-anchor="middle">ρ = 0.21</text>
+<text x="898.0" y="386.0" class="tsub" text-anchor="middle">p = 0.02</text>
+<text x="684.0" y="418.0" class="body">Metastases lean toward immune and</text>
+<text x="684.0" y="434.5" class="body">interferon programs. Meanwhile, SNV</text>
+<text x="684.0" y="451.0" class="body">recall stays low by design (no gnomAD</text>
+<text x="684.0" y="467.5" class="body">or panel of normals).</text>
+<path class="chev" d="M339,298 l6,6 l-6,6"/>
+<path class="chev" d="M655,298 l6,6 l-6,6"/>
+<rect x="36" y="512" width="928" height="110" rx="12" class="panel"/>
+<text x="52.0" y="538.0" class="eyebrow">WORKFLOW</text>
+<text x="140.0" y="538.0" class="small">Nextflow DSL2 with conda, Docker or Singularity profiles, run inside WSL2</text>
+<line x1="111.7" y1="608" x2="888.3" y2="608" class="track"/>
+<circle cx="111.7" cy="608" r="4.5" class="packet"/>
+<rect x="52.0" y="548" width="119.4" height="50" rx="8" class="chip" style="animation-delay:0.0s"/>
+<text x="61.0" y="565.0" class="step-n">1</text>
+<text x="72.0" y="566.0" class="step-role">Slice</text>
+<text x="61.0" y="581.0" class="step-tool">samtools</text>
+<text x="61.0" y="594.0" class="small">HTTPS range reads</text>
+<rect x="181.4" y="548" width="119.4" height="50" rx="8" class="chip" style="animation-delay:1.2s"/>
+<text x="190.4" y="565.0" class="step-n">2</text>
+<text x="201.4" y="566.0" class="step-role">Dedup</text>
+<text x="190.4" y="581.0" class="step-tool">GATK</text>
+<text x="190.4" y="594.0" class="small">MarkDuplicates</text>
+<rect x="310.9" y="548" width="119.4" height="50" rx="8" class="chip" style="animation-delay:2.4s"/>
+<text x="319.9" y="565.0" class="step-n">3</text>
+<text x="330.9" y="566.0" class="step-role">SNV/indel</text>
+<text x="319.9" y="581.0" class="step-tool">Mutect2</text>
+<text x="319.9" y="594.0" class="small">FilterMutectCalls</text>
+<rect x="440.3" y="548" width="119.4" height="50" rx="8" class="chip" style="animation-delay:3.6s"/>
+<text x="449.3" y="565.0" class="step-n">4</text>
+<text x="460.3" y="566.0" class="step-role">SV + CNV</text>
+<text x="449.3" y="581.0" class="step-tool">Manta · CNVkit</text>
+<text x="449.3" y="594.0" class="small">chr9 + chr20</text>
+<rect x="569.7" y="548" width="119.4" height="50" rx="8" class="chip" style="animation-delay:4.8s"/>
+<text x="578.7" y="565.0" class="step-n">5</text>
+<text x="589.7" y="566.0" class="step-role">Benchmark</text>
+<text x="578.7" y="581.0" class="step-tool">hap.py · Truvari</text>
+<text x="578.7" y="594.0" class="small">vs truth sets</text>
+<rect x="699.1" y="548" width="119.4" height="50" rx="8" class="chip" style="animation-delay:6.0s"/>
+<text x="708.1" y="565.0" class="step-n">6</text>
+<text x="719.1" y="566.0" class="step-role">RNA-seq</text>
+<text x="708.1" y="581.0" class="step-tool">DESeq2 · fgsea</text>
+<text x="708.1" y="594.0" class="small">TCGA-SKCM</text>
+<rect x="828.6" y="548" width="119.4" height="50" rx="8" class="chip" style="animation-delay:7.2s"/>
+<text x="837.6" y="565.0" class="step-n">7</text>
+<text x="848.6" y="566.0" class="step-role">Integrate</text>
+<text x="837.6" y="581.0" class="step-tool">TMB vs IFN-γ</text>
+<text x="837.6" y="594.0" class="small">Spearman</text>
+<text x="36.0" y="650.0" class="eyebrow">TAKE-HOME</text>
+<text x="36.0" y="673.0" class="take">Structural variants came back with <tspan class="em">zero false positives</tspan>, and a <tspan class="em">CDKN2A-spanning deletion</tspan> emerged</text>
+<text x="36.0" y="694.0" class="take">directly from pipeline output. Furthermore, every weaker number is traced to a documented scope decision.</text>
+<text x="36.0" y="728.0" class="eyebrow">SKILLS</text>
+<rect x="100.0" y="712" width="109.6" height="24" rx="12" class="skill"/>
+<text x="154.8" y="728.0" class="chiptext" text-anchor="middle">Nextflow DSL2</text>
+<rect x="217.6" y="712" width="106.2" height="24" rx="12" class="skill"/>
+<text x="270.8" y="728.0" class="chiptext" text-anchor="middle">GATK Mutect2</text>
+<rect x="331.9" y="712" width="55.3" height="24" rx="12" class="skill"/>
+<text x="359.5" y="728.0" class="chiptext" text-anchor="middle">Manta</text>
+<rect x="395.2" y="712" width="62.8" height="24" rx="12" class="skill"/>
+<text x="426.6" y="728.0" class="chiptext" text-anchor="middle">CNVkit</text>
+<rect x="466.0" y="712" width="58.9" height="24" rx="12" class="skill"/>
+<text x="495.5" y="728.0" class="chiptext" text-anchor="middle">hap.py</text>
+<rect x="532.9" y="712" width="63.1" height="24" rx="12" class="skill"/>
+<text x="564.5" y="728.0" class="chiptext" text-anchor="middle">Truvari</text>
+<rect x="604.0" y="712" width="68.8" height="24" rx="12" class="skill"/>
+<text x="638.4" y="728.0" class="chiptext" text-anchor="middle">DESeq2</text>
+<rect x="680.8" y="712" width="57.1" height="24" rx="12" class="skill"/>
+<text x="709.4" y="728.0" class="chiptext" text-anchor="middle">GSEA</text>
+<rect x="745.9" y="712" width="62.0" height="24" rx="12" class="skill"/>
+<text x="776.9" y="728.0" class="chiptext" text-anchor="middle">Python</text>
+<rect x="815.9" y="712" width="30.8" height="24" rx="12" class="skill"/>
+<text x="831.3" y="728.0" class="chiptext" text-anchor="middle">R</text>
+</svg>

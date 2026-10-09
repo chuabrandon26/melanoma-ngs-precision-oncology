@@ -1,4 +1,49 @@
-# Melanoma NGS Precision Oncology Portfolio Pipeline
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/visual-abstract-dark.svg">
+  <img alt="Visual abstract: three Nextflow DSL2 pipelines call somatic SNVs, indels, structural variants and copy number on the COLO829 melanoma tumor and matched normal, benchmarked against published truth sets, plus RNA-seq of 120 TCGA-SKCM patients. Manta reached 100 percent SV precision, a CDKN2A-spanning loss on 9p was recovered, 3,527 genes differed between metastatic and primary tumors, and tumor mutational burden correlated with an interferon-gamma signature." src="assets/visual-abstract-light.svg" width="100%">
+</picture>
+
+<h1 align="center">Melanoma NGS Precision Oncology</h1>
+
+<p align="center">
+  Somatic variant calling, structural variants, copy number and RNA-seq on the COLO829 melanoma benchmark, built as three Nextflow DSL2 pipelines
+</p>
+
+<p align="center">
+  <img alt="Nextflow: DSL2" src="https://img.shields.io/badge/Nextflow-DSL2-0dc09d">
+  <img alt="GATK: Mutect2" src="https://img.shields.io/badge/GATK-Mutect2-4a3aa7">
+  <img alt="SV + CNV: Manta · CNVkit" src="https://img.shields.io/badge/SV%20%2B%20CNV-Manta%20%C2%B7%20CNVkit-1f8f6a">
+  <img alt="RNA-seq: DESeq2 · fgsea" src="https://img.shields.io/badge/RNA--seq-DESeq2%20%C2%B7%20fgsea-e09a00">
+  <img alt="Python + R: notebooks" src="https://img.shields.io/badge/Python%20%2B%20R-notebooks-566573">
+  <img alt="license: MIT" src="https://img.shields.io/badge/license-MIT-566573">
+</p>
+
+<p align="center">
+  <a href="#overview">Overview</a> &nbsp;·&nbsp; <a href="#results">Results</a> &nbsp;·&nbsp; <a href="#the-three-modules">Modules</a> &nbsp;·&nbsp; <a href="#how-to-run-each-pipeline">How to run</a> &nbsp;·&nbsp; <a href="#data-sources-and-truth-sets">Data sources</a>
+</p>
+
+---
+
+## At a glance
+
+| **3** | **100%** | **3,527** | **120** | **ρ = 0.21** |
+|:---:|:---:|:---:|:---:|:---:|
+| Nextflow DSL2 pipelines | SV precision (Manta) | DE genes, metastatic vs primary | TCGA-SKCM patients | TMB vs IFN-γ signature |
+
+> **Take-home:** structural variants were recovered with zero false positives, and a CDKN2A-spanning deletion on chromosome 9p emerged directly from pipeline output. Furthermore, every weaker number is traced back to a documented scope decision, such as running Mutect2 without gnomAD or a panel of normals.
+
+## Skills demonstrated
+
+| Area | Evidence in this repository |
+|---|---|
+| **Workflow engineering** | Nextflow DSL2 with shared modules, per-process conda environments, Docker and Singularity profiles, and execution reports |
+| **Somatic variant calling** | GATK Mutect2 with FilterMutectCalls, Manta structural variants and CNVkit copy number |
+| **Benchmarking** | hap.py with vcfeval for SNVs and indels, Truvari for structural variants, and concordance checks for CNVs |
+| **Data engineering** | Remote BAM slicing over HTTPS range requests, plus header and mate-field repair so Manta accepts sliced BAMs |
+| **Transcriptomics** | DESeq2 differential expression, fgsea Hallmark enrichment, and tumor mutational burden versus expression |
+| **Scientific communication** | Notebooks written for non-coders, with every limitation stated next to the number it affects |
+
+## Overview
 
 Three Nextflow DSL2 pipelines, one coherent cancer type: whole-exome (WES) somatic
 variant calling, whole-genome-style (WGS) somatic SNV/structural-variant/copy-number
@@ -54,8 +99,8 @@ the real numbers interpreted in context rather than left to speak for themselves
 | SNV, whole chr9+chr20 (`hap.py`) | 5.7% | 4.3% | 4.9% | 120 TP / 2,691 FP / 1,981 FN, of 2,101 truth-set SNVs |
 | Indel, whole chr9+chr20 (`hap.py`) | 3.6% | 3.8% | 3.7% | 5 TP / 128 FP / 133 FN, of 138 truth-set indels |
 | Structural variants (Manta + Truvari) | 44.4% | **100%** | 61.5% | 6 calls made, 0 unmatched (0 FP)¹; 8 of 18 truth-set events recovered (10 FN) |
-| CNV vs. independent BICseq2 segmentation (concordance, not accuracy) | — | — | — | 39/39 CNVkit segments overlap a BICseq2 segment (100%) |
-| CNV vs. SV-truth DEL/DUP calls (concordance, not accuracy) | — | — | — | 5/39 CNVkit segments overlap an SV-truth DEL/DUP region (12.8%) |
+| CNV vs. independent BICseq2 segmentation (concordance, not accuracy) | n/a | n/a | n/a | 39/39 CNVkit segments overlap a BICseq2 segment (100%) |
+| CNV vs. SV-truth DEL/DUP calls (concordance, not accuracy) | n/a | n/a | n/a | 5/39 CNVkit segments overlap an SV-truth DEL/DUP region (12.8%) |
 
 Every number above is read directly from the pipeline's own output files (`hap.py`'s
 `summary.csv` for SNV/indel, Truvari's `summary.json` for SVs, the two `.overlap.tsv`
