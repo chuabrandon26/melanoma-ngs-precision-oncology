@@ -449,6 +449,42 @@ Then, with the `melanoma_notebooks` conda environment active, open the three not
 in `notebooks/` in order; each reads that module's real pipeline output and produces the
 figures and numbers shown in the Results section above.
 
+### Fetching the raw TCGA-SKCM counts
+
+`data/raw/` is not tracked in this repository, so a fresh clone has no TCGA count files
+and **notebook 3 will not run until they are fetched**. They are open-access and need no
+GDC login, token or data-access application: gene-level counts sit on GDC's open tier,
+unlike raw reads and germline variant calls.
+
+The RNA-seq pipeline fetches them by default:
+
+```bash
+nextflow run pipelines/rnaseq/main.nf -profile conda
+```
+
+To fetch them without running Nextflow, call the same script the pipeline calls. It takes
+an output directory and the number of samples per group, and needs only the Python
+standard library:
+
+```bash
+mkdir -p data/raw/tcga_skcm
+python3 modules/bin/fetch_tcga_skcm_counts.py data/raw/tcga_skcm 60
+```
+
+| | |
+|---|---|
+| **What arrives** | one `*.rna_seq.augmented_star_gene_counts.tsv` per sample, plus `tcga_skcm_sample_sheet.tsv` |
+| **How many** | up to `max_per_group` from each of Primary Tumor and Metastatic, so `60` gives the 120-patient cohort every figure in notebook 3 was produced from |
+| **Size** | about 4 MB per sample, so roughly 485 MB for 120 |
+| **Default in the pipeline** | `params.tcga_max_per_group = 60` in `nextflow.config` |
+
+The sample sheet is what notebook 3 reads to build its DESeq2 design, and the same
+`case_id` column drives the per-patient TMB lookup in Part 4, so both must come from the
+same fetch rather than two separate runs.
+
+Passing a smaller number makes the notebook run faster at the cost of statistical power.
+The differential expression and GSEA results in the Results section assume the full 120.
+
 ## Data sources and truth sets
 
 | What | Source | Notes |
