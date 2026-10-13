@@ -19,5 +19,3 @@ data/processed/wes/*.bam.bai
 .RData
 .Rhistory
 
-# Local AI-assistant tooling config, not part of the project deliverable
-.claude/
