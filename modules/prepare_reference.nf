@@ -106,9 +106,13 @@ process BUILD_EXOME_BED {
  * bare-numeric contigs and HTTPS range-request support before this was written, the same
  * check applied to the COLO829 BAMs at the very start of this project).
  *
- * Added after a real finding, not planned from the start: an initial WES run with no
- * germline resource at all produced very poor apparent precision/recall (2.6%/0.3% for
- * SNPs) against the truth set. Cross-checking the actual PASS calls against the full
+ * Added after an initial WES run with no germline resource at all produced very poor
+ * apparent precision/recall (2.6%/0.3% for SNPs) against the truth set. Correction: that
+ * poor result was later traced to a genome-build mismatch, not to germline sites. The
+ * SNV/indel truth set is GRCh38 and was only renamed, not lifted, to GRCh37 (fixed in
+ * modules/bin/convert_colo829_truth_to_vcf.py), and adding this resource left the WES
+ * numbers essentially unchanged. The original reasoning is kept below for the record,
+ * and the resource stays in place as standard Mutect2 practice. Cross-checking the actual PASS calls against the full
  * chr9 truth set showed most had no relationship to any known somatic mutation, which,
  * combined with several calls showing a clean-looking but germline-consistent pattern
  * (near-total VAF in "tumor", zero coverage-supported evidence in the downsampled

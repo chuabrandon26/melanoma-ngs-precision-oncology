@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 752" width="1000" height="752" role="img" aria-labelledby="t d">
 <title id="t">Visual abstract: Benchmarking somatic variant calling in melanoma</title>
-<desc id="d">Three Nextflow DSL2 pipelines call somatic SNVs, indels, structural variants and copy number on the COLO829 melanoma tumor and matched normal, benchmarked against published truth sets, plus RNA-seq of 120 TCGA-SKCM patients. Manta reached 100 percent SV precision, a CDKN2A-spanning loss on 9p was recovered, 3,527 genes differed between metastatic and primary tumors, and TMB correlated with an IFN-gamma signature (rho 0.21).</desc>
+<desc id="d">Three Nextflow DSL2 pipelines call somatic SNVs, indels, structural variants and copy number on the COLO829 melanoma tumor and matched normal, benchmarked against published truth sets, plus RNA-seq of 120 TCGA-SKCM patients. Manta reached 100 percent SV precision, SNV recall reached 81.5 percent after a genome-build bug in the truth set was fixed, a CDKN2A-spanning loss on 9p was recovered, 3,527 genes differed between metastatic and primary tumors, and TMB correlated with an IFN-gamma signature (rho 0.21).</desc>
 <style>
   text { font-family: 'Helvetica Neue', Helvetica, Arial, 'Liberation Sans', sans-serif; fill: #e6edf3; }
   .bgcard { fill: #151b23; stroke: #2d3640; }
@@ -60,6 +60,8 @@
   .m-gene { stroke: #9aa7b4; stroke-width: 1.4; }
   .m-exon { fill: #9aa7b4; }
   .m-tissue { fill: #1f2731; stroke: #9aa7b4; stroke-width: 1.2; }
+  .m-tissue.fillonly { stroke: none; }
+  .m-tissue.outline { fill: none; stroke-width: 1.6; }
   .m-ring { fill: none; stroke: #e6edf3; stroke-width: 2; stroke-dasharray: 3 2; animation: pulse 3.2s ease-in-out infinite; }
   .m-cell { stroke: #0d1117; stroke-width: 1.2; }
   .m-radius { fill: #34b98b; fill-opacity: .08; stroke: #34b98b; stroke-width: 1.6; stroke-dasharray: 4 3; }
@@ -186,25 +188,25 @@
 <rect x="848" y="192" width="100" height="46" rx="8" class="tile metric"/>
 <text x="898.0" y="216.0" class="tval" text-anchor="middle">100%</text>
 <text x="898.0" y="230.0" class="tsub" text-anchor="middle">precision</text>
-<text x="684.0" y="264.0" class="lab">CDKN2A loss on 9p</text>
-<text x="684.0" y="279.0" class="lab">(CNVkit)</text>
+<text x="684.0" y="264.0" class="lab">SNV recall, chr9+20</text>
+<text x="684.0" y="279.0" class="lab">(after build fix)</text>
 <rect x="848" y="244" width="100" height="46" rx="8" class="tile metric"/>
-<path class="check" d="M860,267.0 l5,5 l9,-11"/>
-<text x="882.0" y="272.0" class="lab">found</text>
-<text x="684.0" y="316.0" class="lab">DE genes, metastatic</text>
-<text x="684.0" y="331.0" class="lab">vs primary (DESeq2)</text>
+<text x="898.0" y="268.0" class="tval" text-anchor="middle">81.5%</text>
+<text x="898.0" y="282.0" class="tsub" text-anchor="middle">was 5.7%</text>
+<text x="684.0" y="316.0" class="lab">CDKN2A loss on 9p</text>
+<text x="684.0" y="331.0" class="lab">(CNVkit)</text>
 <rect x="848" y="296" width="100" height="46" rx="8" class="tile metric"/>
-<text x="898.0" y="320.0" class="tval" text-anchor="middle">3,527</text>
-<text x="898.0" y="334.0" class="tsub" text-anchor="middle">padj &lt; 0.05</text>
-<text x="684.0" y="368.0" class="lab">TMB vs IFN-γ</text>
-<text x="684.0" y="383.0" class="lab">signature</text>
+<path class="check" d="M860,319.0 l5,5 l9,-11"/>
+<text x="882.0" y="324.0" class="lab">found</text>
+<text x="684.0" y="368.0" class="lab">DE genes, metastatic</text>
+<text x="684.0" y="383.0" class="lab">vs primary (DESeq2)</text>
 <rect x="848" y="348" width="100" height="46" rx="8" class="tile metric"/>
-<text x="898.0" y="372.0" class="tval" text-anchor="middle">ρ = 0.21</text>
-<text x="898.0" y="386.0" class="tsub" text-anchor="middle">p = 0.02</text>
-<text x="684.0" y="418.0" class="body">Metastases lean toward immune and</text>
-<text x="684.0" y="434.5" class="body">interferon programs. Meanwhile, SNV</text>
-<text x="684.0" y="451.0" class="body">recall stays low by design (no gnomAD</text>
-<text x="684.0" y="467.5" class="body">or panel of normals).</text>
+<text x="898.0" y="372.0" class="tval" text-anchor="middle">3,527</text>
+<text x="898.0" y="386.0" class="tsub" text-anchor="middle">padj &lt; 0.05</text>
+<text x="684.0" y="418.0" class="body">The SNV truth set was on GRCh38 and</text>
+<text x="684.0" y="434.5" class="body">the calls on GRCh37. Lifting it over</text>
+<text x="684.0" y="451.0" class="body">and REF-checking every record fixed</text>
+<text x="684.0" y="467.5" class="body">the benchmark.</text>
 <path class="chev" d="M339,298 l6,6 l-6,6"/>
 <path class="chev" d="M655,298 l6,6 l-6,6"/>
 <rect x="36" y="512" width="928" height="110" rx="12" class="panel"/>
@@ -248,8 +250,8 @@
 <text x="837.6" y="581.0" class="step-tool">TMB vs IFN-γ</text>
 <text x="837.6" y="594.0" class="small">Spearman</text>
 <text x="36.0" y="650.0" class="eyebrow">TAKE-HOME</text>
-<text x="36.0" y="673.0" class="take">Structural variants came back with <tspan class="em">zero false positives</tspan>, and a <tspan class="em">CDKN2A-spanning deletion</tspan> emerged</text>
-<text x="36.0" y="694.0" class="take">directly from pipeline output. Furthermore, every weaker number is traced to a documented scope decision.</text>
+<text x="36.0" y="673.0" class="take">Structural variants came back with <tspan class="em">zero false positives</tspan>, a <tspan class="em">CDKN2A-spanning deletion</tspan> emerged from</text>
+<text x="36.0" y="694.0" class="take">pipeline output, and fixing a <tspan class="em">genome-build bug</tspan> in the truth set raised SNV recall from 5.7% to 81.5%.</text>
 <text x="36.0" y="728.0" class="eyebrow">SKILLS</text>
 <rect x="100.0" y="712" width="109.6" height="24" rx="12" class="skill"/>
 <text x="154.8" y="728.0" class="chiptext" text-anchor="middle">Nextflow DSL2</text>

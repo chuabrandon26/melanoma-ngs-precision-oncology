@@ -1,6 +1,6 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/visual-abstract-dark.svg">
-  <img alt="Visual abstract: three Nextflow DSL2 pipelines call somatic SNVs, indels, structural variants and copy number on the COLO829 melanoma tumor and matched normal, benchmarked against published truth sets, plus RNA-seq of 120 TCGA-SKCM patients. Manta reached 100 percent SV precision, a CDKN2A-spanning loss on 9p was recovered, 3,527 genes differed between metastatic and primary tumors, and tumor mutational burden correlated with an interferon-gamma signature." src="assets/visual-abstract-light.svg" width="100%">
+  <img alt="Visual abstract: three Nextflow DSL2 pipelines call somatic SNVs, indels, structural variants and copy number on the COLO829 melanoma tumor and matched normal, benchmarked against published truth sets, plus RNA-seq of 120 TCGA-SKCM patients. Manta reached 100 percent SV precision, SNV recall reached 81.5 percent after a genome-build bug in the truth set was fixed, a CDKN2A-spanning loss on 9p was recovered, 3,527 genes differed between metastatic and primary tumors, and tumor mutational burden correlated with an interferon-gamma signature." src="assets/visual-abstract-light.svg" width="100%">
 </picture>
 
 <h1 align="center">Melanoma NGS Precision Oncology</h1>
@@ -26,11 +26,11 @@
 
 ## At a glance
 
-| **3** | **100%** | **3,527** | **120** | **ρ = 0.21** |
+| **3** | **81.5%** | **100%** | **3,527** | **ρ = 0.21** |
 |:---:|:---:|:---:|:---:|:---:|
-| Nextflow DSL2 pipelines | SV precision (Manta) | DE genes, metastatic vs primary | TCGA-SKCM patients | TMB vs IFN-γ signature |
+| Nextflow DSL2 pipelines | SNV recall, chr9+chr20 (after truth-set fix) | SV precision (Manta) | DE genes, metastatic vs primary | TMB vs IFN-γ signature |
 
-> **Take-home:** structural variants were recovered with zero false positives, and a CDKN2A-spanning deletion on chromosome 9p emerged directly from pipeline output. Furthermore, every weaker number is traced back to a documented scope decision, such as running Mutect2 without gnomAD or a panel of normals.
+> **Take-home:** structural variants were recovered with zero false positives, and a CDKN2A-spanning deletion on chromosome 9p emerged directly from pipeline output. In addition, a genome-build bug in the SNV/indel benchmark was found and fixed: the truth set was on GRCh38 while the calls were on GRCh37, and lifting it over raised SNV recall from 5.7% to 81.5%.
 
 ## Skills demonstrated
 
@@ -63,47 +63,82 @@ they are low, with the documented reasons why.
 **Everything below is real.** Every pipeline in this repository has been run end to end
 against real remotely-sliced COLO829 BAM data and real TCGA-SKCM patient data; every
 number and figure in the Results section was produced by the notebooks in `notebooks/`
-reading actual pipeline output, not simulated or hand-written for illustration.
+reading actual pipeline output, not simulated or hand-written for illustration. The
+SNV/indel scores after the truth-set fix come from `scripts/rescore_snv_indel.py`, which
+re-scores the committed pipeline calls (see
+[Benchmark bug found and fixed](#benchmark-bug-found-and-fixed)).
 
 ## Results
 
+### Benchmark bug found and fixed
+
+The first SNV/indel scores (2.6% to 5.7% recall) were too low to be explained by missing
+population resources, which would mainly add false positives and lower precision, not
+recall. Checking REF alleles against both genome builds showed why: the parklab SNV/indel
+truth set is on GRCh38, while the BAMs, reference and calls are GRCh37, and the
+truth-set preparation had only renamed `chr9` to `9` without converting coordinates.
+
+| REF alleles checked | Match GRCh37 | Match GRCh38 |
+|---|:---:|:---:|
+| Prepared truth SNVs, original run (n = 2,871) | 24.5% (chance level) | 100% |
+| WGS Mutect2 calls (n = 21,314) | 100% | 23.1% |
+| Lifted truth SNVs, after the fix (n = 2,800) | 100% | 26.0% |
+
+The few true positives in the original run all sat on the stretch of chr9 where the two
+builds happen to share coordinates, and chr20 had none. The fix lifts every truth record
+from GRCh38 to GRCh37 with a chain file and checks each lifted REF allele against the
+GRCh37 FASTA, stopping the run if more than 1% disagree
+(`modules/bin/convert_colo829_truth_to_vcf.py`), with a second `bcftools norm --check-ref`
+guard in `modules/prepare_truth_sets.nf`. Variant calling itself was unaffected, so the
+committed calls were re-scored against the corrected truth set with
+`scripts/rescore_snv_indel.py`, which runs RTG vcfeval (the engine hap.py uses here) and
+counts the way hap.py does. The re-scored summaries sit next to hap.py's original ones as
+`results/{wes,wgs}/benchmark/COLO829T_vs_COLO829R.rescored_lifted_truth.summary.csv`, and
+a full pipeline re-run regenerates the official hap.py tables.
+
 ### Module 1: WES somatic SNV/indel calling
 
-`hap.py`/`vcfeval` against the published COLO829 SNV/indel truth set, PASS calls only:
+PASS calls only, against the published COLO829 SNV/indel truth set:
 
 | Type | Recall | Precision | F1 | TP / FP / FN | Truth-set size |
 |---|---|---|---|---|---|
-| SNV | 2.6% | 3.0% | 2.8% | 2 / 65 / 74 | 76 |
-| Indel | 16.7% | 25.0% | 20.0% | 1 / 3 / 5 | 6 |
+| SNV, after liftover fix | **77.9%** | **84.1%** | **80.9%** | 53 / 10 / 15 | 68 |
+| Indel, after liftover fix | 50.0% | 25.0% | 33.3% | 1 / 3 / 1 | 2 |
+| SNV, original run (truth set on GRCh38) | 2.6% | 3.0% | 2.8% | 2 / 65 / 74 | 76 |
+| Indel, original run (truth set on GRCh38) | 16.7% | 25.0% | 20.0% | 1 / 3 / 5 | 6 |
 
-Raw counts included alongside the percentages deliberately: `hap.py`'s own summary CSV
-(`results/wes/benchmark/COLO829T_vs_COLO829R.happy.summary.csv`) reports exactly these
-TP/FP/FN numbers, so every percentage above is directly checkable against them rather
-than needing to be taken on faith.
+Raw counts included alongside the percentages deliberately: the summary CSVs in
+`results/wes/benchmark/` (hap.py's `COLO829T_vs_COLO829R.happy.summary.csv` for the
+original run and `COLO829T_vs_COLO829R.rescored_lifted_truth.summary.csv` after the fix)
+report exactly these TP/FP/FN numbers, so every percentage above is directly checkable
+against them rather than needing to be taken on faith.
 
 ![WES precision, recall, and F1 by variant type](results/figures/wes-precision-recall-f1-by-type.png)
 
-These numbers are low in absolute terms, and deliberately so, not a caller-quality
-problem: this run supplies Mutect2 with no gnomAD germline resource and no panel of
-normals (a production pipeline's two strongest defenses against false positives),
-benchmarks against an approximate GENCODE-derived exome BED rather than a validated
-commercial capture kit, and compares against a small number of truth variants (76 SNPs,
-6 indels in scope) where each individual false call swings the reported percentage by
-several points. `notebooks/01_wes_benchmarking.ipynb` walks through exactly why, with
-the real numbers interpreted in context rather than left to speak for themselves.
+With the truth set on the correct build, about four in five truth SNVs inside the exome
+are recovered and about five in six SNV calls are true. Only 68 truth SNVs and 2 truth
+indels fall inside the chr9+chr20 exome footprint, so each call moves the SNV percentages
+by more than a point and the indel numbers are not meaningful on their own. The WES
+re-score used an approximate GENCODE v19 exome BED (7.1 Mb rather than the pipeline's
+7.4 Mb), so a full pipeline re-run may shift these counts by a few variants.
+`notebooks/01_wes_benchmarking.ipynb` walks through how the bug was found and what the
+corrected numbers mean.
 
 ### Module 2: WGS-style SNV/indel, structural variant, and copy-number calling
 
 | Analysis | Recall | Precision | F1 | Raw counts (checkable against the source file) |
 |---|---|---|---|---|
-| SNV, whole chr9+chr20 (`hap.py`) | 5.7% | 4.3% | 4.9% | 120 TP / 2,691 FP / 1,981 FN, of 2,101 truth-set SNVs |
-| Indel, whole chr9+chr20 (`hap.py`) | 3.6% | 3.8% | 3.7% | 5 TP / 128 FP / 133 FN, of 138 truth-set indels |
+| SNV, whole chr9+chr20 (after liftover fix) | **81.5%** | **81.1%** | **81.3%** | 2,281 TP / 531 FP / 519 FN, of 2,800 truth-set SNVs |
+| Indel, whole chr9+chr20 (after liftover fix) | 27.2% | 28.6% | 27.9% | 37 TP / 95 FP / 99 FN, of 136 truth-set indels |
+| SNV, original run (`hap.py`, truth set on GRCh38) | 5.7% | 4.3% | 4.9% | 120 TP / 2,691 FP / 1,981 FN, of 2,101 truth-set SNVs |
+| Indel, original run (`hap.py`, truth set on GRCh38) | 3.6% | 3.8% | 3.7% | 5 TP / 128 FP / 133 FN, of 138 truth-set indels |
 | Structural variants (Manta + Truvari) | 44.4% | **100%** | 61.5% | 6 calls made, 0 unmatched (0 FP)¹; 8 of 18 truth-set events recovered (10 FN) |
 | CNV vs. independent BICseq2 segmentation (concordance, not accuracy) | n/a | n/a | n/a | 39/39 CNVkit segments overlap a BICseq2 segment (100%) |
 | CNV vs. SV-truth DEL/DUP calls (concordance, not accuracy) | n/a | n/a | n/a | 5/39 CNVkit segments overlap an SV-truth DEL/DUP region (12.8%) |
 
-Every number above is read directly from the pipeline's own output files (`hap.py`'s
-`summary.csv` for SNV/indel, Truvari's `summary.json` for SVs, the two `.overlap.tsv`
+Every number above is read directly from output files in `results/wgs/benchmark/` (the
+re-scored summary CSV for SNV/indel after the fix, `hap.py`'s `summary.csv` for the
+original run, Truvari's `summary.json` for SVs, the two `.overlap.tsv`
 files for CNV), not derived or estimated. ¹ Truvari counts true positives from each side
 separately rather than as one shared TP number: `TP-comp` (6, all 6 of Manta's calls
 matched a truth event, giving 0 FP and 100% precision) and `TP-base` (8, out of 18
@@ -114,13 +149,15 @@ unedited numbers.
 
 ![WGS CNVkit copy-number profile, chr9 and chr20](results/figures/wgs-copy-number-profile-chr9-chr20.png)
 
-Structural variant calling clearly outperformed SNV/indel calling here, especially on
-precision: **zero false positives** across Manta's 6 evaluated calls. A large
-rearrangement leaves redundant, hard-to-miss evidence spread across many discordant and
-split reads, while a single-base substitution is far easier to confuse with sequencing
-noise or unfiltered germline variation without the population resources this project
-deliberately omits; SV recall (44.4%) is limited mainly by this run's downsampled
-coverage. The copy-number plot above shows a clear, well-supported (8,081-probe)
+Structural variant calling reached the highest precision here: **zero false positives**
+across Manta's 6 evaluated calls, since a large rearrangement leaves redundant,
+hard-to-miss evidence spread across many discordant and split reads. SNV calling is also
+solid once correctly scored, at about 81% recall and precision across chr9+chr20. Most of
+the remaining SNV misses have low allele fractions: recall is 96% for truth variants at a
+VAF of 0.35 or more, 66% between 0.20 and 0.35, and about 6% below 0.20, which fits the
+30x/20x downsampling. Indels remain harder (27% recall), with most misses in regions the
+truth set itself labels difficult or extreme. SV recall (44.4%) is limited mainly by this
+run's downsampled coverage. The copy-number plot above shows a clear, well-supported (8,081-probe)
 single-copy loss spanning nearly all of chromosome 9's short arm; the notebook
 independently confirms, by direct coordinate lookup against the segment table (not
 assumed from general biology), that this loss fully spans **CDKN2A**
@@ -204,8 +241,9 @@ in `nextflow.config`), cutting the combined slice to roughly 6.5GB. This is a re
 tradeoff, not a free lunch: lower depth, particularly in the normal sample, measurably
 reduces recall in the benchmarking notebooks compared to native-depth results, since
 fewer supporting reads means some true variants fall below a caller's confidence
-threshold; the low SNV/indel recall numbers reported above are, in part, a direct
-consequence of this choice. Set `downsample_enabled = false` to restore full native depth
+threshold. After the truth-set fix, most of the SNV truth variants still missed have low
+allele fractions (recall is about 6% below a VAF of 0.2), which is where this choice
+costs the most. Set `downsample_enabled = false` to restore full native depth
 if disk headroom allows. Other ways to shrink this further: changing `params.chromosomes`
 to drop chr9 entirely, or restricting chr9 to a window around CDKN2A in
 `modules/slice_remote_bam.nf` instead of the whole chromosome.
@@ -274,6 +312,7 @@ melanoma-ngs-precision-oncology/   (this repository)
     figures/               figures saved by the notebooks, embedded in this README
   scripts/
     fetch_reference_data.sh  one-time setup: downloads every small reference/truth-set file
+    rescore_snv_indel.py     re-scores committed calls against the lifted SNV/indel truth set
   nextflow.config
   README.md
 ```
@@ -416,7 +455,7 @@ figures and numbers shown in the Results section above.
 |---|---|---|
 | COLO829T / COLO829BL BAMs | ENA, study PRJEB27698, runs ERR2752450 / ERR2752449 | GRCh37, bare numeric contigs (`9`, `20`, not `chr9`/`chr20`), confirmed by reading the BAM header directly |
 | SV truth set | [UMCUGenetics/COLO829_somaticSV](https://github.com/UMCUGenetics/COLO829_somaticSV) (Valle-Inclan et al. 2022, Cell Genomics) | Multi-platform validated (Illumina, PacBio, Oxford Nanopore, 10x, BioNano); GRCh37, bare numeric contigs already |
-| SNV / indel truth set | [parklab/SMaHT_SNV_COLO829BLT50_HAPMAP](https://github.com/parklab/SMaHT_SNV_COLO829BLT50_HAPMAP) | Short-read-called, PacBio-validated, filtered against COLO829BL as a negative control; uses `chr`-prefixed contigs, renamed during pipeline prep to match everything else |
+| SNV / indel truth set | [parklab/SMaHT_SNV_COLO829BLT50_HAPMAP](https://github.com/parklab/SMaHT_SNV_COLO829BLT50_HAPMAP) | Short-read-called, PacBio-validated, filtered against COLO829BL as a negative control; GRCh38 (`hg38_no_alt`) with `chr`-prefixed contigs, lifted to GRCh37 and REF-checked during pipeline prep |
 | CNV comparison reference (not a truth set) | Same UMCUGenetics study, via [Zenodo](https://zenodo.org/records/7515830) | A BICseq2 segmentation, i.e. one algorithm's output, used only as a cross-tool concordance check |
 | TCGA-SKCM RNA-seq counts | GDC API, open tier | No login required for gene-level counts |
 | RNA-seq FASTQ (optional demo) | ENA, GSE78220 / Hugo et al. 2016 | Melanoma anti-PD-1 pretreatment biopsies |
@@ -425,8 +464,11 @@ figures and numbers shown in the Results section above.
 Real formatting/correctness mismatches found and handled while building this project,
 worth knowing about if you extend it:
 
-1. The SNV/indel truth set uses `chr9`/`chr20`; everything else uses bare `9`/`20`.
-   Handled in `modules/bin/convert_colo829_truth_to_vcf.py`.
+1. The SNV/indel truth set is on GRCh38 with `chr9`/`chr20` names, while everything else
+   is GRCh37 with bare `9`/`20`. Renaming alone is not enough: doing only that left the
+   truth set on the wrong coordinates and collapsed SNV recall to about 5%.
+   `modules/bin/convert_colo829_truth_to_vcf.py` now lifts every record to GRCh37 and
+   checks each REF allele against the reference, so a build mismatch stops the run.
 2. The SV truth set encodes structural variants as breakend (BND-style) mate pairs with
    no `INFO/END` field, not as symbolic `<DEL>` calls with an explicit end coordinate.
    Naively defaulting a missing END to the start position silently collapsed every
@@ -444,7 +486,9 @@ worth knowing about if you extend it:
   BED exists for this truth set (unlike GIAB), so the full comparison region (the exome
   BED for Module 1, the whole chr9+chr20 extent for Module 2) is used as the target space
   instead, which can inflate apparent false positives/negatives somewhat. Treat these
-  numbers as good-faith estimates.
+  numbers as good-faith estimates. After the truth-set fix, the committed calls were
+  re-scored with RTG vcfeval directly (`scripts/rescore_snv_indel.py`), counted the way
+  hap.py counts.
 - **SV** (Module 2 only): Truvari, the current community-standard SV comparison tool,
   using its own documented default thresholds.
 - **CNV** (Module 2 only): not a precision/recall benchmark, a concordance comparison
@@ -457,12 +501,14 @@ at the point of use, and says explicitly whether it is a tool's own documented d
 (the common case) or a choice made less certainly for this exact dataset. A few of the
 more consequential ones, summarized:
 
-- No germline resource (e.g. gnomAD) or panel-of-normals is supplied to Mutect2: both are
-  genome-scale files that would need their own sizing conversation, and COLO829 is a
-  well-characterized cell line rather than a real patient sample, so the
-  germline-contamination false positives those resources guard against are a smaller
-  concern here than in clinical use. This is the single biggest driver of the low SNV/
-  indel precision/recall numbers reported above.
+- Mutect2 gets a 1000 Genomes Phase 3 germline resource restricted to chr9 and chr20,
+  rather than gnomAD, and no panel of normals: gnomAD's af-only resource is a multi-GB,
+  genome-scale file, and a panel of normals needs many unrelated normal samples run
+  through this same pipeline. COLO829 is a well-characterized cell line rather than a
+  real patient sample, so the germline-contamination false positives these resources
+  guard against are a smaller concern here than in clinical use. With the truth set on
+  the correct build, SNV precision is about 81% to 84%, so these simplifications are not a
+  major driver of the scores.
 - CNVkit's discrete gain/loss calls use its own default log2-ratio thresholds for a
   diploid sample; COLO829's exact tumor purity was not independently re-verified for this
   chr9+chr20 slice.

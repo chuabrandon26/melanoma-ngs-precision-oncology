@@ -7,6 +7,7 @@
 #   - SV truth set VCF:                 24.6KB
 #   - SNV truth set:                    10.1MB
 #   - Indel truth set:                  302KB
+#   - hg38ToHg19 liftover chain:        ~1.2MB
 #   - BICseq2 copy-number reference:    15.0KB (zipped)
 # None of this needs more than a couple of minutes even on a slow connection.
 #
@@ -24,9 +25,10 @@ echo "== Reference genome: GRCh37, chr9 and chr20 only =="
 # ("chr9", "chr20"): the COLO829T/COLO829BL BAMs on ENA (PRJEB27698) were aligned to
 # GRCh37 with exactly this contig naming, confirmed by reading the BAM header directly
 # (@SQ SN:20 LN:63025520, which matches GRCh37's chr20 length exactly, not GRCh38's).
-# All three COLO829 truth sets (SV, SNV, indel) are also GRCh37-based. Using Ensembl's
-# GRCh37 archive with its native numeric naming avoids a contig-renaming or liftover
-# step for the reference genome itself. Source: Ensembl GRCh37 archive (release is
+# The SV truth set is also GRCh37-based, but the SNV/indel truth set is GRCh38 and is
+# lifted to GRCh37 during pipeline prep (see below). Using Ensembl's GRCh37 archive with
+# its native numeric naming avoids a contig-renaming or liftover step for the reference
+# genome itself. Source: Ensembl GRCh37 archive (release is
 # whatever "current" resolves to on the GRCh37 archive site, which only receives
 # occasional annotation updates, not reference sequence changes).
 curl -L --fail -o "$REF_DIR/Homo_sapiens.GRCh37.dna.chromosome.9.fa.gz" \
@@ -61,13 +63,19 @@ curl -L --fail -o "$REF_DIR/truth_sets/truthset_somaticSVs_COLO829.vcf" \
 
 echo "== SNV / indel truth set (parklab SMaHT COLO829BLT50 benchmarking study) =="
 # Called from short-read Illumina data, validated against long-read PacBio data, and
-# filtered against COLO829BL as a negative control. NOTE: this file uses "chr"-prefixed
-# contigs (chr1, chr9, ...), unlike the BAMs/reference/SV-truth-set above. The pipeline's
-# prepare_truth_sets process strips this prefix before any comparison, see modules/bin/.
+# filtered against COLO829BL as a negative control. NOTE: this file is on GRCh38
+# (hg38_no_alt, "chr"-prefixed contigs), unlike the GRCh37 BAMs/reference/SV truth set
+# above. The pipeline's prepare_truth_sets process lifts every record to GRCh37 with the
+# chain file below, strips the prefix and checks each REF allele against the GRCh37
+# FASTA before any comparison, see modules/bin/convert_colo829_truth_to_vcf.py.
 curl -L --fail -o "$REF_DIR/truth_sets/Truthset_SNV_COLO829.txt" \
-  "https://raw.githubusercontent.com/parklab/SMaHT_SNV_COLO829BLT50_HAPMAP/main/Resource/Truthset_SNV_COLO829.txt"
+  "https://raw.githubusercontent.com/parklab/SMaHT_SNV_COLO829BLT50_HAPMAP/main/Resource/COLO829BLT50_reference_set/Truthset_SNV_COLO829.txt"
 curl -L --fail -o "$REF_DIR/truth_sets/Truthset_Indel_COLO829.txt" \
-  "https://raw.githubusercontent.com/parklab/SMaHT_SNV_COLO829BLT50_HAPMAP/main/Resource/Truthset_Indel_COLO829.txt"
+  "https://raw.githubusercontent.com/parklab/SMaHT_SNV_COLO829BLT50_HAPMAP/main/Resource/COLO829BLT50_reference_set/Truthset_Indel_COLO829.txt"
+
+echo "== GRCh38 -> GRCh37 liftover chain for the SNV/indel truth set (UCSC, ~1.2MB) =="
+curl -L --fail -o "$REF_DIR/truth_sets/hg38ToHg19.over.chain.gz" \
+  "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/hg38ToHg19.over.chain.gz"
 
 echo "== Copy-number comparison reference (BICseq2 segmentation, NOT a validated truth set) =="
 # There is no independently validated, multi-platform CNV truth set for COLO829 the way

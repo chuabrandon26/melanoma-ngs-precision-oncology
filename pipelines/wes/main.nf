@@ -59,7 +59,11 @@ workflow {
     // script is ever edited (see modules/prepare_truth_sets.nf for why this matters).
     convert_script = file("${moduleDir}/../../modules/bin/convert_colo829_truth_to_vcf.py", checkIfExists: true)
     extract_script = file("${moduleDir}/../../modules/bin/extract_sv_delDup_bed.py", checkIfExists: true)
-    PREPARE_TRUTH_SETS(snv_truth_txt, indel_truth_txt, sv_truth_vcf, params.chromosomes, convert_script, extract_script)
+    // The parklab SNV/indel truth set is GRCh38, so it is lifted to this project's GRCh37
+    // build and REF-checked against the same genome.fa the calls were made on.
+    liftover_chain = file(params.truth_liftover_chain, checkIfExists: true)
+    PREPARE_TRUTH_SETS(snv_truth_txt, indel_truth_txt, sv_truth_vcf, params.chromosomes, convert_script, extract_script,
+                       liftover_chain, PREPARE_REFERENCE.out.fasta, PREPARE_REFERENCE.out.fai)
 
     // ---- pull only chr9+chr20 from the two remote, indexed COLO829 BAMs ----
     // Coverage downsampling fractions: see nextflow.config for the full rationale

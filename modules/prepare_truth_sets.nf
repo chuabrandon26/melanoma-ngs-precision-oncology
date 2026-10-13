@@ -1,9 +1,11 @@
 /*
  * Prepares all three COLO829 truth sets for use by the benchmarking processes:
  *   - SNV and indel truth: converted from parklab's custom TSV format into minimal VCFs,
- *     restricted to the requested chromosomes, with "chr" stripped from contig names
- *     (see modules/bin/convert_colo829_truth_to_vcf.py: the source files use "chr9"/
- *     "chr20", everything else in this project uses bare "9"/"20")
+ *     lifted from GRCh38 to GRCh37 and restricted to the requested chromosomes, with
+ *     "chr" stripped from contig names (see modules/bin/convert_colo829_truth_to_vcf.py:
+ *     the source files are GRCh38 with "chr9"/"chr20" names, while everything else in
+ *     this project is GRCh37 with bare "9"/"20"; renaming alone left the truth set on the
+ *     wrong coordinates and collapsed SNV recall to about 5%)
  *   - SV truth: already GRCh37 bare-numeric, just subset to the requested chromosomes
  *   - A DEL/DUP-only BED derived from the SV truth set, for the CNV concordance check in
  *     BENCHMARK_CNV, since no independent CNV truth set exists for COLO829
@@ -16,13 +18,14 @@ process PREPARE_TRUTH_SETS {
     label 'process_single'
     publishDir "${params.processed_dir}/truth_sets", mode: 'copy'
 
-    // python is needed for the two helper scripts below, not for bcftools itself; adding
-    // it explicitly here since the plain bcftools biocontainer does not bundle a Python
-    // interpreter. The conda profile resolves this cleanly; if you use -profile docker or
-    // singularity instead, this specific process needs a container that has both
-    // bcftools and python3, which the stock bcftools biocontainer pinned below does not,
-    // so either run this one process with -profile conda or build a small custom image.
-    conda "bioconda::bcftools=1.19 bioconda::htslib=1.19.1 conda-forge::python=3.11"
+    // python (with pyliftover for the GRCh38 -> GRCh37 liftover) is needed for the two
+    // helper scripts below, not for bcftools itself; adding it explicitly here since the
+    // plain bcftools biocontainer does not bundle a Python interpreter. The conda profile
+    // resolves this cleanly; if you use -profile docker or singularity instead, this
+    // specific process needs a container that has bcftools, python3 and pyliftover, which
+    // the stock bcftools biocontainer pinned below does not, so either run this one
+    // process with -profile conda or build a small custom image.
+    conda "bioconda::bcftools=1.19 bioconda::htslib=1.19.1 conda-forge::python=3.11 bioconda::pyliftover=0.4"
     container "quay.io/biocontainers/bcftools:1.19--h8b25389_0"
 
     input:
@@ -39,6 +42,9 @@ process PREPARE_TRUTH_SETS {
     // changed input, invalidating the cache the way it should.
     path convert_script
     path extract_script
+    path liftover_chain  // GRCh38 -> GRCh37 chain: the parklab SNV/indel truth set is GRCh38
+    path fasta           // GRCh37 genome.fa from PREPARE_REFERENCE, used to check every lifted REF
+    path fasta_fai
 
     output:
     tuple path("truth_snv.vcf.gz"), path("truth_snv.vcf.gz.tbi"), emit: snv
@@ -50,8 +56,8 @@ process PREPARE_TRUTH_SETS {
 
     script:
     """
-    python3 ${convert_script} ${snv_truth_txt} truth_snv.unsorted.vcf SNV ${chromosomes}
-    python3 ${convert_script} ${indel_truth_txt} truth_indel.unsorted.vcf INDEL ${chromosomes}
+    python3 ${convert_script} ${snv_truth_txt} truth_snv.unsorted.vcf SNV ${chromosomes} ${liftover_chain} ${fasta}
+    python3 ${convert_script} ${indel_truth_txt} truth_indel.unsorted.vcf INDEL ${chromosomes} ${liftover_chain} ${fasta}
     bcftools sort truth_snv.unsorted.vcf -O z -o truth_snv.vcf.gz
     bcftools sort truth_indel.unsorted.vcf -O z -o truth_indel.vcf.gz
     tabix -p vcf truth_snv.vcf.gz
@@ -62,6 +68,10 @@ process PREPARE_TRUTH_SETS {
     # precision/recall/F1 reporting, rather than being run once per variant type.
     bcftools concat -a truth_snv.vcf.gz truth_indel.vcf.gz -O z -o truth_snv_indel.vcf.gz
     tabix -p vcf truth_snv_indel.vcf.gz
+
+    # Independent second check that the truth set and the reference share a build: stops
+    # with an error on the first REF allele that disagrees with genome.fa.
+    bcftools norm --check-ref e -f ${fasta} truth_snv_indel.vcf.gz -O u -o /dev/null
 
     # The SV truth set is already GRCh37 bare-numeric, it only needs subsetting.
     bgzip -c ${sv_truth_vcf} > sv_truth_full.vcf.gz

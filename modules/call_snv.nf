@@ -49,9 +49,10 @@ process CALL_SNV_MUTECT2 {
         --native-pair-hmm-threads ${task.cpus} \\
         -O ${meta.id}.mutect2.vcf.gz
     # --germline-resource: a 1000 Genomes Phase 3 chr9+chr20 population-allele-frequency
-    # VCF (see modules/prepare_reference.nf's PREPARE_GERMLINE_RESOURCE for the real
-    # finding that motivated adding this: an initial WES run with no germline resource at
-    # all showed most "somatic" PASS calls had no relationship to the truth set).
+    # VCF (see modules/prepare_reference.nf's PREPARE_GERMLINE_RESOURCE: it was added after
+    # an initial WES run showed most "somatic" PASS calls had no relationship to the truth
+    # set, an observation later traced to a GRCh38 truth set compared against GRCh37
+    # calls rather than to germline sites).
     #
     # Measured, not assumed, and worth being honest about: adding this made only a small
     # difference in practice (checked directly: POPAF, the population-frequency
@@ -62,9 +63,9 @@ process CALL_SNV_MUTECT2 {
     # its own af-only resource is a multi-GB, genome-scale download even before
     # subsetting, the same disk-budget reasoning that shaped most other choices here. So
     # this remains a real, deliberate simplification versus clinical-grade Mutect2 usage,
-    # not a solved problem: expect WES precision/recall against the truth set to be
-    # noticeably weaker than a clinical-grade run would show, on top of the noise already
-    # expected from benchmarking against only 7.4Mb of exonic sequence. No panel-of-
+    # not a solved problem, on top of the noise already expected from benchmarking against
+    # only 7.4Mb of exonic sequence. With the truth set on the correct build, precision is
+    # about 80 to 84%, so the remaining false positives are a modest share of calls. No panel-of-
     # normals is supplied either, for the same reason: building one needs many unrelated
     # normal samples run through this same pipeline, which a single-pair portfolio
     # project cannot construct.
